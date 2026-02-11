@@ -1,0 +1,12 @@
+name: Check PR Status
+
+on:
+  workflow_dispatch:
+
+jobs:
+  hello-world:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Echo Hello World
+        run: echo "Hello world!"
