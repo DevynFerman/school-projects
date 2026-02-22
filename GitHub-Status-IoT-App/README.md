@@ -16,6 +16,34 @@ This project is intentionally **incremental and exploratory**, with early emphas
 
 ---
 
+## In-development
+
+### Runtime direction (current)
+
+The active design direction is to run a **local Swift background process** during active work hours, rather than relying on always-on remote execution.
+
+Current approach:
+- Build a Swift CLI using `swift-argument-parser`
+- Support `--once` (single poll) and `--watch` (continuous polling) modes
+- Run as a lightweight local background process while I am actively working
+- Keep poll intervals conservative (for example 1-5 minutes) to minimize CPU/network usage
+- Persist last-known PR state locally for reliable change detection across restarts
+- Emit concise status output that can be bridged to IoT display behavior
+
+Why this direction:
+- Matches real usage: I only need it while actively working
+- Easier local iteration and debugging
+- Better fit for direct communication with locally connected hardware
+- Keeps credentials and execution context on my development machine
+
+---
+
+## Deprecated (Original Runtime Direction)
+
+The sections below are kept for project history and learning context. Any references to always-on or not-yet-decided runtime/backend execution should be treated as **deprecated** in favor of the local Swift background process described above.
+
+---
+
 ## Intentions & Learning Goals
 
 This project is part of an **AI-Driven IoT System Development course** and serves multiple purposes:
@@ -57,7 +85,7 @@ The display should communicate *that something changed*, not necessarily all det
 
 ---
 
-## Planned Architecture (High Level)
+## Planned Architecture (High Level) [Deprecated]
 
 **Hardware (Initial):**
 - Arduino Nano or Arduino Nano ESP32
@@ -66,7 +94,7 @@ The display should communicate *that something changed*, not necessarily all det
 - Level shifter (if required)
 - External display (TBD)
 
-**Software (Planned):**
+**Software (Planned) [Deprecated]:**
 - Microcontroller firmware to:
   - Poll or receive GitHub status updates
   - Parse and store last-known state
@@ -76,7 +104,7 @@ The display should communicate *that something changed*, not necessarily all det
 
 ---
 
-## Development Approach
+## Development Approach [Partially Deprecated]
 
 This project is intentionally **stepwise**:
 
@@ -88,7 +116,7 @@ This project is intentionally **stepwise**:
 2. **Simple Feedback Loops**
    - LEDs or basic output before full display integration
 
-3. **Incremental Software**
+3. **Incremental Software** (implementation language/runtime now evolving toward Swift local background process)
    - Minimal viable logic
    - Poll → compare → notify pattern
 
@@ -111,7 +139,7 @@ These may be explored later but are explicitly out of scope for early iterations
 
 ---
 
-## Status
+## Status [Updated]
 
 🚧 **Early prototyping phase**
 
@@ -119,8 +147,9 @@ Currently focused on:
 - Breadboard layout
 - Arduino placement
 - Understanding I²C pin mapping and sensor wiring
+- Defining Swift-based local PR polling architecture and process lifecycle
 
-Software and backend design will follow once the hardware foundation is solid.
+Software and backend design are being implemented incrementally alongside hardware progress, with local background execution as the current runtime target.
 
 ---
 

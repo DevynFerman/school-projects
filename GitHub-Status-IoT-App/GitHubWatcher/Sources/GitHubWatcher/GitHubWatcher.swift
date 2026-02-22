@@ -1,0 +1,108 @@
+//
+//  GitHubWatcher.swift
+//  GitHubWatcher
+//
+//  Created by Devyn Ferman on 2/14/26.
+//
+
+import Foundation
+import ArgumentParser
+
+@main
+struct GitHubWatcher: AsyncParsableCommand {
+    static let configuration = CommandConfiguration(
+        abstract: "Command for launching the GitHub Watcher."
+    )
+    
+    @Argument
+    var username: String
+    
+    @Argument
+    var password: String
+    
+    @Argument
+    var ghAuthToken: String
+    
+    @Argument
+    var name: String
+    
+    @Argument
+    var email: String
+    
+    @Option(help: "Enter time in minutes to wait before checking for new commits.")
+    var wait: Int = 5
+    
+    @Option(help: "Enter time in hours to wait before terminating the program.")
+    var watchTimeout: Int = 8
+    
+    func run() async throws {
+        
+        // MARK: Initialize the Watcher's Manager for the session
+        let sessionCredentials = Credentials(username: username, password: password, ghAuthToken: ghAuthToken, name: name, email: email)
+        let watchManager = WatcherManager(credentials: sessionCredentials)
+        // Here
+        print("Here is my username: \(username)")
+        print("Here is my password: \(password)")
+        print("Here is my ghAuthToken: \(ghAuthToken)")
+        print("Here is my name: \(name)")
+        print("Here is my email: \(email)")
+        print("Here is my wait: \(wait)")
+        print("Here is my watchTimeout: \(watchTimeout)")
+        
+        do {
+            // MARK: Testing Block
+            try await watchManager.fetchGitHubUser(watchManager)
+            // MARK: End Testing Block
+            
+            // Check the current auth status
+            
+            // If Auth is logged out, Authenticate Command
+            
+            // MARK: Watcher Loop
+            
+            
+            
+            
+            // Here's what I'm thinking:
+            // Check the auth status:
+            // Auth'd means ignore the authorization command and run the loop
+            // No-Auth means run the authorization command then the loop
+            //
+            // The process will by default poll every 5 minutes and then stop after 8 hours if not killed manually.
+        } catch {
+            fatalError("We Died!")
+        }
+    }
+}
+// This line invokes the command-line parser and runs the command.
+
+
+/*
+ import ArgumentParser
+ 
+ struct WatchCommand: AsyncParsableCommand {
+ @Argument
+ var username: String
+ @Argument
+ var wait: String
+ 
+ func run() async throws {
+ print("Watching user \(username) every \(wait).")
+ }
+ }
+ 
+ struct AuthCommand: AsyncParsableCommand {
+ func run() async throws {
+ print("Authenticating for the day...")
+ }
+ }
+ 
+ struct GitHubWatcher: AsyncParsableCommand {
+ static let configuration = CommandConfiguration(
+ abstract: "A utility for watching GitHub users.",
+ subcommands: [WatchCommand.self, AuthCommand.self]
+ )
+ }
+ 
+ GitHubWatcher.main()
+ */
