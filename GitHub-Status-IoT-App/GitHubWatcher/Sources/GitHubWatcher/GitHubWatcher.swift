@@ -39,11 +39,9 @@ struct GitHubWatcher: AsyncParsableCommand {
         
         // MARK: Initialize the Watcher's Manager for the session
         let sessionCredentials = Credentials(username: username, password: password, ghAuthToken: ghAuthToken, name: name, email: email)
-        let watchManager = WatcherManager(credentials: sessionCredentials)
+        var watchManager = WatcherManager(credentials: sessionCredentials)
         // Here
         print("Here is my username: \(username)")
-        print("Here is my password: \(password)")
-        print("Here is my ghAuthToken: \(ghAuthToken)")
         print("Here is my name: \(name)")
         print("Here is my email: \(email)")
         print("Here is my wait: \(wait)")
@@ -51,7 +49,11 @@ struct GitHubWatcher: AsyncParsableCommand {
         
         do {
             // MARK: Testing Block
-            try await watchManager.fetchGitHubUser(watchManager)
+            watchManager.ghUser = try await watchManager.getGitHubUser(watchManager)
+            print(watchManager.ghUser?.reposURL)
+//            guard let repos = watchManager.ghUser?.publicRepos else {
+//                fatalError("Error: User is not associated with any repositories.")
+//            }
             // MARK: End Testing Block
             
             // Check the current auth status
@@ -74,35 +76,3 @@ struct GitHubWatcher: AsyncParsableCommand {
         }
     }
 }
-// This line invokes the command-line parser and runs the command.
-
-
-/*
- import ArgumentParser
- 
- struct WatchCommand: AsyncParsableCommand {
- @Argument
- var username: String
- @Argument
- var wait: String
- 
- func run() async throws {
- print("Watching user \(username) every \(wait).")
- }
- }
- 
- struct AuthCommand: AsyncParsableCommand {
- func run() async throws {
- print("Authenticating for the day...")
- }
- }
- 
- struct GitHubWatcher: AsyncParsableCommand {
- static let configuration = CommandConfiguration(
- abstract: "A utility for watching GitHub users.",
- subcommands: [WatchCommand.self, AuthCommand.self]
- )
- }
- 
- GitHubWatcher.main()
- */

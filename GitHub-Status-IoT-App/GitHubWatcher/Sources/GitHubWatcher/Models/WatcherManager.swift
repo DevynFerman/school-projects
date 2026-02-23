@@ -7,5 +7,5 @@
 
 struct WatcherManager {
     var credentials: Credentials
-    
+    var ghUser: GitHubUser?
 }
