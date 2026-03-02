@@ -49,8 +49,15 @@ struct GitHubWatcher: AsyncParsableCommand {
         
         do {
             // MARK: Testing Block
-            watchManager.ghUser = try await watchManager.getGitHubUser(watchManager)
-            print(watchManager.ghUser?.reposURL)
+            try await watchManager.getGitHubUser(watchManager)
+            try await watchManager.getRepos(watchManager)
+
+            // Now available:
+            print(watchManager.ghUser?.login ?? "No user")
+            print("Repo count: \(watchManager.repos.count)")
+            for repo in watchManager.repos {
+                print(repo.name)
+            }
 //            guard let repos = watchManager.ghUser?.publicRepos else {
 //                fatalError("Error: User is not associated with any repositories.")
 //            }
