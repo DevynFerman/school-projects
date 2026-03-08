@@ -2,6 +2,10 @@
 
 This repository documents what I am learning with AI support for my course project.
 
+## FOR PEER REVIEWERS
+
+My updates for my learning with AI repo are appended to the end of the README! Simply scroll down and you'll be able to see them there, thank you!
+
 ## Purpose
 
 I am using AI as a learning assistant to:
