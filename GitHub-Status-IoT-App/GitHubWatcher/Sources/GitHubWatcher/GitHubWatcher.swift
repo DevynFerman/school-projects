@@ -40,46 +40,44 @@ struct GitHubWatcher: AsyncParsableCommand {
         // MARK: Initialize the Watcher's Manager for the session
         let sessionCredentials = Credentials(username: username, password: password, ghAuthToken: ghAuthToken, name: name, email: email)
         var watchManager = WatcherManager(credentials: sessionCredentials)
+        
+        let runCount = watchTimeout * 60 / wait
+        
         // Here
         print("Here is my username: \(username)")
         print("Here is my name: \(name)")
         print("Here is my email: \(email)")
         print("Here is my wait: \(wait)")
         print("Here is my watchTimeout: \(watchTimeout)")
-        
-        do {
-            // MARK: Testing Block
-            try await watchManager.getGitHubUser(watchManager)
-            try await watchManager.getRepos(watchManager)
-
-            // Now available:
-            print(watchManager.ghUser?.login ?? "No user")
-            print("Repo count: \(watchManager.repos.count)")
-            for repo in watchManager.repos {
-                print(repo.name)
+        for _ in 0..<runCount {
+            do {
+                // MARK: Testing Block
+                try await watchManager.getGitHubUser(watchManager)
+                try await watchManager.getRepos(watchManager)
+                
+                // Now available:
+                print(watchManager.ghUser?.login ?? "No user")
+                print("Repo count: \(watchManager.repos.count)")
+                for repo in watchManager.repos {
+                    print(repo.name)
+                }
+                
+                // Fetch and print pull requests authored by the watcher
+                try await watchManager.getMyPullRequests(watchManager)
+                print("My PRs for \(String(describing: watchManager.ghUser?.login))")
+                print("Total: \(watchManager.myPullRequests.count)")
+                for pr in watchManager.myPullRequests {
+                    let repoName = pr.repositoryFullName ?? "unknown repo"
+                    print("#\(pr.number) [\(pr.state.uppercased())] \(pr.title) — \(repoName)")
+                }
+                sleep(UInt32(60 * wait))
+                // MARK: End Testing Block
+                
+                // The process will by default poll every 5 minutes and then stop after 8 hours if not killed manually.
+            } catch {
+                fatalError("We Died!")
             }
-//            guard let repos = watchManager.ghUser?.publicRepos else {
-//                fatalError("Error: User is not associated with any repositories.")
-//            }
-            // MARK: End Testing Block
-            
-            // Check the current auth status
-            
-            // If Auth is logged out, Authenticate Command
-            
-            // MARK: Watcher Loop
-            
-            
-            
-            
-            // Here's what I'm thinking:
-            // Check the auth status:
-            // Auth'd means ignore the authorization command and run the loop
-            // No-Auth means run the authorization command then the loop
-            //
-            // The process will by default poll every 5 minutes and then stop after 8 hours if not killed manually.
-        } catch {
-            fatalError("We Died!")
         }
     }
 }
+
