@@ -16,7 +16,6 @@ public struct Repository: Codable, Identifiable, Sendable {
     public let fullName: String
     public let isPrivate: Bool
 
-    // Owner (minimal subset; you can reuse GitHubUser if desired, but here we keep just login/id to avoid cycles)
     public let owner: Owner
 
     // URLs
