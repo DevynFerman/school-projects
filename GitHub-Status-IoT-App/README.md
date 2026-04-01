@@ -22,13 +22,22 @@ This project is intentionally **incremental and exploratory**, with early emphas
 
 The active design direction is to run a **local Swift background process** during active work hours, rather than relying on always-on remote execution.
 
-Current approach:
-- Build a Swift CLI using `swift-argument-parser`
-- Support `--once` (single poll) and `--watch` (continuous polling) modes
-- Run as a lightweight local background process while I am actively working
-- Keep poll intervals conservative (for example 1-5 minutes) to minimize CPU/network usage
-- Persist last-known PR state locally for reliable change detection across restarts
-- Emit concise status output that can be bridged to IoT display behavior
+**Implemented:**
+- Swift CLI built with `swift-argument-parser`
+- Configurable poll interval (`--wait`, default 5 minutes) and session duration (`--watchTimeout`, default 8 hours)
+- Authenticated GitHub API integration:
+  - Fetches user profile (`GET /users/{username}`)
+  - Fetches open pull requests across all user repositories (`GET /repos/{owner}/{repo}/pulls`)
+  - Fetches review-requested pull requests via search API (`GET /search/issues?q=is:pr+is:open+review-requested:{username}`)
+- Change detection: only updates the display when the status message changes
+- Priority-based display logic: review requests > draft PRs > open PR count > all clear
+- Serial communication to Arduino over `/dev/cu.usbserial-210` (9600 baud, 8N1)
+- Error recovery: API failures are caught and surfaced on the display, then the poll loop continues
+
+**Not yet implemented:**
+- `--once` mode (single poll without looping)
+- Persisted state across restarts
+- CI status integration
 
 Why this direction:
 - Matches real usage: I only need it while actively working
@@ -141,15 +150,17 @@ These may be explored later but are explicitly out of scope for early iterations
 
 ## Status [Updated]
 
-🚧 **Early prototyping phase**
+**Sprint 2 — Software integration complete, hardware integration in progress**
+
+Completed:
+- Swift CLI polls GitHub API for open PRs and review requests
+- Display message logic prioritizes review requests, then draft PRs, then open PR counts
+- Serial communication sends 2-line status messages to Arduino LCD (16x2 I2C)
+- Error recovery keeps the watcher running through transient API failures
 
 Currently focused on:
-- Breadboard layout
-- Arduino placement
-- Understanding I²C pin mapping and sensor wiring
-- Defining Swift-based local PR polling architecture and process lifecycle
-
-Software and backend design are being implemented incrementally alongside hardware progress, with local background execution as the current runtime target.
+- End-to-end hardware testing with Arduino + LCD
+- Validating serial protocol with real display output
 
 ---
 

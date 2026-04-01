@@ -71,12 +71,6 @@ struct GitHubWatcher: AsyncParsableCommand {
         let serialConnection = try ArduinoSerialConnection(portPath: "/dev/cu.usbserial-210")
         var lastDisplayedMessage: (topLine: String, bottomLine: String)?
         
-        // Here
-        print("Here is my username: \(username)")
-        print("Here is my name: \(name)")
-        print("Here is my email: \(email)")
-        print("Here is my wait: \(wait)")
-        print("Here is my watchTimeout: \(watchTimeout)")
         for index in 0..<runCount {
             do {
                 try await watchManager.getGitHubUser(watchManager)
@@ -102,7 +96,7 @@ struct GitHubWatcher: AsyncParsableCommand {
                     print("Display unchanged")
                 }
 
-                sleep(UInt32(60 * wait))
+                try await Task.sleep(for: .seconds(60 * wait))
                 // The process will by default poll every 5 minutes and then stop after 8 hours if not killed manually.
             } catch {
                 print("Failed during poll cycle \(index + 1): \(error)")
@@ -117,7 +111,7 @@ struct GitHubWatcher: AsyncParsableCommand {
                     print("Failed to send error state to Arduino: \(error)")
                 }
 
-                sleep(UInt32(60 * wait))
+                try await Task.sleep(for: .seconds(60 * wait))
             }
         }
     }

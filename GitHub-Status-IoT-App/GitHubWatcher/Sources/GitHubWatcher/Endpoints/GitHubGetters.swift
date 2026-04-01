@@ -17,7 +17,9 @@ extension WatcherManager {
         let (data, response) = try await URLSession.shared.data(for: request)
         
         guard let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 else {
-            fatalError("GitHub API error: unable to retrieve user data")
+            throw URLError(.badServerResponse, userInfo: [
+                NSLocalizedDescriptionKey: "GitHub API error: unable to retrieve user data"
+            ])
         }
 
         let ghUser: GitHubUser = try JSONDecoder.githubDecoder().decode(GitHubUser.self, from: data)
@@ -25,9 +27,10 @@ extension WatcherManager {
     }
     
     mutating func getRepos(_ manager: WatcherManager) async throws {
-        guard let userRepo = manager.ghUser?.reposURL
-        else {
-            fatalError("No user repos")
+        guard let userRepo = manager.ghUser?.reposURL else {
+            throw URLError(.userAuthenticationRequired, userInfo: [
+                NSLocalizedDescriptionKey: "No GitHub user loaded — cannot fetch repos"
+            ])
         }
         
         let url = URL(string: "\(userRepo)")!
@@ -38,7 +41,9 @@ extension WatcherManager {
         let (data, response) = try await URLSession.shared.data(for: request)
         
         guard let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 else {
-            fatalError("GitHub API error: unable to retrieve user repos")
+            throw URLError(.badServerResponse, userInfo: [
+                NSLocalizedDescriptionKey: "GitHub API error: unable to retrieve user repos"
+            ])
         }
 
         let repos = try JSONDecoder.githubDecoder().decode([Repository].self, from: data)
@@ -86,5 +91,40 @@ extension WatcherManager {
 
         self.myPullRequests = collected
         print("Found \(collected.count) pull requests authored by \(login)")
+    }
+
+    /// Fetch open pull requests where the watcher's review has been requested via GitHub Search API.
+    mutating func getReviewRequestedPullRequests(_ manager: WatcherManager) async throws {
+        guard let login = manager.ghUser?.login else {
+            throw URLError(.userAuthenticationRequired, userInfo: [
+                NSLocalizedDescriptionKey: "No GitHub user loaded — cannot fetch review requests"
+            ])
+        }
+
+        let query = "is:pr is:open review-requested:\(login)"
+        guard var urlComponents = URLComponents(string: "https://api.github.com/search/issues") else {
+            throw URLError(.badURL)
+        }
+        urlComponents.queryItems = [URLQueryItem(name: "q", value: query)]
+
+        guard let url = urlComponents.url else {
+            throw URLError(.badURL)
+        }
+
+        var request = URLRequest(url: url)
+        request.setValue("token \(manager.credentials.ghAuthToken)", forHTTPHeaderField: "Authorization")
+        request.setValue("application/vnd.github+json", forHTTPHeaderField: "Accept")
+
+        let (data, response) = try await URLSession.shared.data(for: request)
+
+        guard let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 else {
+            throw URLError(.badServerResponse, userInfo: [
+                NSLocalizedDescriptionKey: "GitHub API error: unable to fetch review-requested pull requests"
+            ])
+        }
+
+        let result = try JSONDecoder.githubDecoder().decode(CodeReviewStatus.self, from: data)
+        self.reviewRequestedPullRequests = result.items
+        print("Found \(result.items.count) pull requests requesting review from \(login)")
     }
 }
