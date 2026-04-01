@@ -10,4 +10,5 @@ struct WatcherManager {
     var ghUser: GitHubUser?
     var repos: [Repository] = []
     var myPullRequests: [PullRequest] = []
+    var reviewRequestedPullRequests: [ReviewRequestedPullRequest] = []
 }
