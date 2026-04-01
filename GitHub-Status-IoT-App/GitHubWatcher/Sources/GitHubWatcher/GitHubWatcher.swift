@@ -42,6 +42,7 @@ struct GitHubWatcher: AsyncParsableCommand {
         var watchManager = WatcherManager(credentials: sessionCredentials)
         
         let runCount = watchTimeout * 60 / wait
+        let serialConnection = try ArduinoSerialConnection(portPath: "/dev/cu.usbserial-210")
         
         // Here
         print("Here is my username: \(username)")
@@ -49,35 +50,40 @@ struct GitHubWatcher: AsyncParsableCommand {
         print("Here is my email: \(email)")
         print("Here is my wait: \(wait)")
         print("Here is my watchTimeout: \(watchTimeout)")
-        for _ in 0..<runCount {
-            do {
-                // MARK: Testing Block
-                try await watchManager.getGitHubUser(watchManager)
-                try await watchManager.getRepos(watchManager)
-                
-                // Now available:
-                print(watchManager.ghUser?.login ?? "No user")
-                print("Repo count: \(watchManager.repos.count)")
-                for repo in watchManager.repos {
-                    print(repo.name)
-                }
-                
-                // Fetch and print pull requests authored by the watcher
-                try await watchManager.getMyPullRequests(watchManager)
-                print("My PRs for \(String(describing: watchManager.ghUser?.login))")
-                print("Total: \(watchManager.myPullRequests.count)")
-                for pr in watchManager.myPullRequests {
-                    let repoName = pr.repositoryFullName ?? "unknown repo"
-                    print("#\(pr.number) [\(pr.state.uppercased())] \(pr.title) — \(repoName)")
-                }
-                sleep(UInt32(60 * wait))
+        for index in 0..<runCount {
+//            do {
+//                // MARK: Testing Block
+//                try await watchManager.getGitHubUser(watchManager)
+//                try await watchManager.getRepos(watchManager)
+//
+//                // Now available:
+//                print(watchManager.ghUser?.login ?? "No user")
+//                print("Repo count: \(watchManager.repos.count)")
+//                for repo in watchManager.repos {
+//                    print(repo.name)
+//                }
+//
+//                // Fetch and print pull requests authored by the watcher
+//                try await watchManager.getMyPullRequests(watchManager)
+//                print("My PRs for \(String(describing: watchManager.ghUser?.login))")
+//                print("Total: \(watchManager.myPullRequests.count)")
+//                for pr in watchManager.myPullRequests {
+//                    let repoName = pr.repositoryFullName ?? "unknown repo"
+//                    print("#\(pr.number) [\(pr.state.uppercased())] \(pr.title) — \(repoName)")
+//                }
+//                sleep(UInt32(60 * wait))
                 // MARK: End Testing Block
-                
+            do {
+                try serialConnection.send(
+                    topLine: "GitHub Watcher",
+                    bottomLine: "Cycle \(index + 1)"
+                )
+                print("Sent to Arduino")
+                sleep(UInt32(60 * wait))
                 // The process will by default poll every 5 minutes and then stop after 8 hours if not killed manually.
             } catch {
-                fatalError("We Died!")
+                print("Failed to send to Arduino: \(error)")
             }
         }
     }
 }
-
