@@ -1,5 +1,5 @@
 //
-//  TestArduinoSerialPort.swift
+//  ArduinoSerialConnection.swift
 //  GitHubWatcher
 //
 //  Created by Devyn Ferman on 3/31/26.

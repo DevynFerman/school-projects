@@ -14,26 +14,32 @@ struct GitHubWatcher: AsyncParsableCommand {
         abstract: "Command for launching the GitHub Watcher."
     )
     
-    @Argument
+    @Argument(help: "Your GitHub username.")
     var username: String
-    
-    @Argument
-    var password: String
-    
-    @Argument
+
+    // Devyn: Needs review before deleting
+    // @Argument
+    // var password: String
+
+    @Argument(help: "A GitHub personal access token with repo scope.")
     var ghAuthToken: String
-    
-    @Argument
-    var name: String
-    
-    @Argument
-    var email: String
-    
-    @Option(help: "Enter time in minutes to wait before checking for new commits.")
+
+    // Devyn: Needs review before deleting
+    // @Argument
+    // var name: String
+
+    // Devyn: Needs review before deleting
+    // @Argument
+    // var email: String
+
+    @Option(help: "Time in minutes between poll cycles.")
     var wait: Int = 5
-    
-    @Option(help: "Enter time in hours to wait before terminating the program.")
+
+    @Option(help: "Total session duration in hours before auto-terminating.")
     var watchTimeout: Int = 8
+
+    @Option(help: "Serial port path for the Arduino connection.")
+    var port: String = "/dev/cu.usbserial-210"
     
     private func displayMessage(for watchManager: WatcherManager) -> (topLine: String, bottomLine: String) {
         let reviewRequestedPullRequests = watchManager.reviewRequestedPullRequests.filter { $0.state.lowercased() == "open" }
@@ -62,20 +68,27 @@ struct GitHubWatcher: AsyncParsableCommand {
     }
     
     func run() async throws {
-        
+
         // MARK: Initialize the Watcher's Manager for the session
-        let sessionCredentials = Credentials(username: username, password: password, ghAuthToken: ghAuthToken, name: name, email: email)
+        let sessionCredentials = Credentials(username: username, ghAuthToken: ghAuthToken)
         var watchManager = WatcherManager(credentials: sessionCredentials)
-        
+
         let runCount = watchTimeout * 60 / wait
-        let serialConnection = try ArduinoSerialConnection(portPath: "/dev/cu.usbserial-210")
+        let serialConnection = try ArduinoSerialConnection(portPath: port)
         var lastDisplayedMessage: (topLine: String, bottomLine: String)?
-        
+
+        // Fetch user profile and repos once at startup — these don't change during a session.
+        try await watchManager.getGitHubUser()
+        try await watchManager.getRepos()
+
         for index in 0..<runCount {
             do {
-                try await watchManager.getGitHubUser(watchManager)
-                try await watchManager.getMyPullRequests(watchManager)
-                try await watchManager.getReviewRequestedPullRequests(watchManager)
+                // Reset PR data each cycle to avoid stale accumulation.
+                watchManager.myPullRequests = []
+                watchManager.reviewRequestedPullRequests = []
+
+                try await watchManager.getMyPullRequests()
+                try await watchManager.getReviewRequestedPullRequests()
 
                 let nextMessage = displayMessage(for: watchManager)
 
@@ -97,7 +110,6 @@ struct GitHubWatcher: AsyncParsableCommand {
                 }
 
                 try await Task.sleep(for: .seconds(60 * wait))
-                // The process will by default poll every 5 minutes and then stop after 8 hours if not killed manually.
             } catch {
                 print("Failed during poll cycle \(index + 1): \(error)")
 

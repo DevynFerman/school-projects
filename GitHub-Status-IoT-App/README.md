@@ -1,4 +1,4 @@
-# GitHub PR Status IoT Display
+# GitHub PR Status IoT Display [OLD - See updated sections at bottom]
 
 ## Overview
 
@@ -179,3 +179,81 @@ It’s intentionally small in scope, but representative of the kinds of systems 
 ## Notes
 
 This README will evolve as the project matures. Early documentation prioritizes **intent and learning objectives** over finalized implementation details.
+
+---
+---
+
+# Updated Content (MVP Complete)
+
+## Status
+
+**Complete — MVP**
+
+The project is a working end-to-end prototype:
+- Swift CLI polls GitHub API for open PRs and review requests
+- Display logic prioritizes review requests, then draft PRs, then open PR counts
+- Serial communication sends 2-line status messages to Arduino LCD (16x2 I2C)
+- Error recovery keeps the watcher running through transient API failures
+- Hardware validated with real Arduino + LCD
+
+---
+
+## Usage
+
+```bash
+swift run GitHubWatcher <username> <github-token> [--wait 5] [--watchTimeout 8] [--port /dev/cu.usbserial-210]
+```
+
+**Arguments:**
+| Argument | Description |
+|----------|-------------|
+| `username` | Your GitHub username |
+| `github-token` | A GitHub personal access token with `repo` scope |
+
+**Options:**
+| Option | Default | Description |
+|--------|---------|-------------|
+| `--wait` | `5` | Minutes between poll cycles |
+| `--watchTimeout` | `8` | Hours before auto-terminating |
+| `--port` | `/dev/cu.usbserial-210` | Serial port for Arduino connection |
+
+---
+
+## Features (Final)
+
+- Swift CLI built with `swift-argument-parser`
+- Configurable poll interval, session duration, and serial port via CLI options
+- Authenticated GitHub API integration:
+  - User profile (`GET /users/{username}`)
+  - Open pull requests across all repos (`GET /repos/{owner}/{repo}/pulls`)
+  - Review-requested PRs via search API (`GET /search/issues`)
+- Priority-based display logic: review requests > draft PRs > open PR count > all clear
+- Change detection: only updates the display when the message differs from the previous cycle
+- Error recovery: API failures are caught and surfaced on the LCD, then polling continues
+- User profile and repos fetched once at startup; only PR data refreshed each cycle
+
+---
+
+## Architecture (Final)
+
+**Hardware:**
+- Arduino Nano (or Nano ESP32)
+- 16x2 I2C LCD display (address `0x27`)
+- USB serial connection to host machine
+
+**Software:**
+- Swift 6+ CLI executable (`GitHubWatcher`)
+- POSIX serial communication (`termios`)
+- `URLSession` for GitHub API requests
+- `swift-argument-parser` for CLI interface
+
+**Serial protocol:**
+- Format: `topLine|bottomLine\n`
+- Each line truncated to 16 characters
+- 9600 baud, 8N1
+
+**Display priority order:**
+1. Review requests (most urgent)
+2. Draft PRs (in progress)
+3. Open PR count
+4. "No Open PRs" / "Nothing pending"
