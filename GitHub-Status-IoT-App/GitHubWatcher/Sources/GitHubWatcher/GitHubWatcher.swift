@@ -41,32 +41,6 @@ struct GitHubWatcher: AsyncParsableCommand {
     @Option(help: "Serial port path for the Arduino connection.")
     var port: String = "/dev/cu.usbserial-210"
     
-    private func displayMessage(for watchManager: WatcherManager) -> (topLine: String, bottomLine: String) {
-        let reviewRequestedPullRequests = watchManager.reviewRequestedPullRequests.filter { $0.state.lowercased() == "open" }
-        let openPullRequests = watchManager.myPullRequests.filter { $0.state.lowercased() == "open" }
-
-        if let reviewRequestedPullRequest = reviewRequestedPullRequests.max(by: { left, right in
-            left.updatedAt < right.updatedAt
-        }) {
-            let repoName = reviewRequestedPullRequest.repositoryFullName?.components(separatedBy: "/").last ?? "Unknown Repo"
-            return ("Review Requested", String(repoName.prefix(16)))
-        }
-
-        if let draftPullRequest = openPullRequests.first(where: { $0.draft == true }) {
-            let repoName = draftPullRequest.repositoryFullName?.components(separatedBy: "/").last ?? "Unknown Repo"
-            return ("Draft PR Active", String(repoName.prefix(16)))
-        }
-
-        if let mostRecentlyUpdatedPullRequest = openPullRequests.max(by: { left, right in
-            left.updatedAt < right.updatedAt
-        }) {
-            let repoName = mostRecentlyUpdatedPullRequest.repositoryFullName?.components(separatedBy: "/").last ?? "Unknown Repo"
-            return ("Open PRs: \(openPullRequests.count)", String(repoName.prefix(16)))
-        }
-
-        return ("No Open PRs", "Nothing pending")
-    }
-    
     func run() async throws {
 
         // MARK: Initialize the Watcher's Manager for the session
@@ -90,26 +64,34 @@ struct GitHubWatcher: AsyncParsableCommand {
                 try await watchManager.getMyPullRequests()
                 try await watchManager.getReviewRequestedPullRequests()
 
-                let nextMessage = displayMessage(for: watchManager)
+                let messages = watchManager.displayMessages()
 
                 print("Completed GitHub poll cycle \(index + 1)")
                 print("My PR count: \(watchManager.myPullRequests.count)")
                 print("Review requested count: \(watchManager.reviewRequestedPullRequests.count)")
                 let openPRCount = watchManager.myPullRequests.filter { $0.state.lowercased() == "open" }.count
                 print("Open PR count: \(openPRCount)")
+                print("Display messages: \(messages.count) repo(s)")
 
-                if lastDisplayedMessage?.topLine != nextMessage.topLine || lastDisplayedMessage?.bottomLine != nextMessage.bottomLine {
-                    try serialConnection.send(
-                        topLine: nextMessage.topLine,
-                        bottomLine: nextMessage.bottomLine
-                    )
-                    lastDisplayedMessage = nextMessage
-                    print("Updated Arduino display")
-                } else {
-                    print("Display unchanged")
+                // Cycle through per-repo messages, showing each for 10 seconds.
+                for message in messages {
+                    if lastDisplayedMessage?.topLine != message.topLine || lastDisplayedMessage?.bottomLine != message.bottomLine {
+                        try serialConnection.send(
+                            topLine: message.topLine,
+                            bottomLine: message.bottomLine
+                        )
+                        lastDisplayedMessage = message
+                        print("  -> \(message.topLine) | \(message.bottomLine)")
+                    }
+                    try await Task.sleep(for: .seconds(5))
                 }
 
-                try await Task.sleep(for: .seconds(60 * wait))
+                // Wait the remainder of the poll interval.
+                let displayTime = messages.count * 10
+                let remainingSeconds = (60 * wait) - displayTime
+                if remainingSeconds > 0 {
+                    try await Task.sleep(for: .seconds(remainingSeconds))
+                }
             } catch {
                 print("Failed during poll cycle \(index + 1): \(error)")
 
