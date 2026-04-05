@@ -85,13 +85,18 @@ footer: Sprint 1 Progress
 
 # Current Gaps and Next Milestones
 
-## Not done yet
-- PR and review status endpoints
-- Poll -> compare -> notify loop with persisted state
-- External screen integration and display rendering
+## Completed (Sprint 2)
+- ~~PR and review status endpoints~~ — implemented PR fetch across repos + review-requested search API
+- ~~External screen integration and display rendering~~ — serial communication to Arduino LCD implemented
+- Poll -> compare -> notify loop — change detection compares display messages between cycles
+
+## Remaining
+- Persisted state across restarts
+- `--once` mode for single-poll usage
+- End-to-end hardware validation with live Arduino + LCD
 
 ## Next milestones
-1. Implement PR/review fetch + state snapshot comparison
-2. Add stable background run behavior and logging
-3. Integrate first external screen output for change alerts
+1. Validate end-to-end with hardware connected
+2. Add state persistence for cross-restart change detection
+3. Explore CI status integration as an optional enhancement
 

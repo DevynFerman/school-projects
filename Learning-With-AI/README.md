@@ -165,8 +165,45 @@ Template for weekly manager reports.
   - `GitHub-Status-IoT-App/PPP.md`
   - `GitHub-Status-IoT-App/README.md`
 
-## Next Milestones
+### Week of 2026-03-31
 
-1. Implement PR/review endpoints in Swift watcher and persist last-known state.
-2. Add single-instance background run mode and clean logging.
-3. MVP: Select screen module and create first display test output (text + basic alert indicator).
+**Goal 1: gh api in background-thread app**
+- Status: `Complete`
+- Completed:
+  - PR fetch endpoint implemented across all user repos (`GET /repos/{owner}/{repo}/pulls`)
+  - Review-requested PR search implemented via GitHub Search API (`GET /search/issues`)
+  - Priority-based display logic: review requests > draft PRs > open PR count > all clear
+  - Change detection compares display messages between cycles — only updates LCD on change
+  - Poll loop optimized: user profile and repos fetched once at startup, only PR data refreshed per cycle
+  - Error recovery: API failures caught, error state displayed on LCD, polling continues
+  - Unused CLI arguments (password, name, email) commented out and marked for review
+  - Redundant method parameter pattern in API layer cleaned up
+  - Configurable `--port` option added for serial port path
+- Evidence:
+  - `GitHub-Status-IoT-App/GitHubWatcher/Sources/GitHubWatcher/Endpoints/GitHubGetters.swift`
+  - `GitHub-Status-IoT-App/GitHubWatcher/Sources/GitHubWatcher/GitHubWatcher.swift`
+  - `GitHub-Status-IoT-App/GitHubWatcher/Sources/GitHubWatcher/Endpoints/PullRequestStatus.swift`
+  - `GitHub-Status-IoT-App/GitHubWatcher/Sources/GitHubWatcher/Endpoints/CodeReviewStatus.swift`
+
+**Goal 2: External screen integration**
+- Status: `Complete`
+- Completed:
+  - Arduino sketch receives serial messages and displays on 16x2 I2C LCD
+  - Serial communication implemented in Swift using POSIX termios (9600 baud, 8N1)
+  - Protocol: pipe-delimited `topLine|bottomLine\n` format, 16-char truncation per line
+  - Static test sketch created for hardware validation without serial
+  - End-to-end hardware validation complete with real Arduino + LCD connected
+  - File renamed from `TestArduinoSerialPort.swift` to `ArduinoSerialConnection.swift`
+- Evidence:
+  - `GitHub-Status-IoT-App/GitHubWatcher/Sources/GitHubWatcher/ArduinoSerialConnection.swift`
+  - `Arduino/GitHubWatcher_IoT/GitHubWatcher_IoT.ino`
+  - `Arduino/LCD-StatusMessage-Static/LCD-StatusMessage-Static.ino`
+
+## Current Status
+
+- Software goal: **Complete.** Swift CLI polls GitHub, detects changes, and sends status to Arduino.
+- Hardware goal: **Complete.** Arduino receives serial messages and displays on I2C LCD. End-to-end validated.
+
+## MVP Status
+
+The project is a working end-to-end prototype. Both learning goals have been achieved.
