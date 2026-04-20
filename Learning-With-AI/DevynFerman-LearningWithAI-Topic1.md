@@ -39,8 +39,6 @@ struct GitHubWatcher: AsyncParsableCommand {
 }
 ```
 
-No `DispatchQueue` or `Task Manager`. `async/await` handles it all.
-
 ---
 
 ## What I Learned: Two Endpoints for Full PR Awareness
@@ -50,9 +48,13 @@ GitHub requires two separate endpoints to get the complete picture:
 | What you need | Endpoint |
 |---|---|
 | PRs you authored | `GET /repos/{owner}/{repo}/pulls` |
-| PRs requesting your review | `GET /search/issues?q=is:pr+is:open+review-requested:{user}` |
+| PRs requesting your review | `GET /search/issues` + `review-requested:{user}` query |
 
-They return different response shapes model and decode them separately.
+---
+
+## Two Endpoints: Decoding the Responses
+
+Both endpoints return **different response shapes**, which requires modeling and decoding them separately.
 
 Use `JSONDecoder` with `.iso8601` date decoding strategy to handle GitHub's date format.
 
@@ -70,7 +72,11 @@ Not everything needs to be refreshed every cycle.
 - Open pull requests
 - Review requests
 
-Repos don't change mid-session, so re-fetching them every 5 minutes wastes API calls and burns toward rate limits. This startup-vs-cycle separation is a common pattern in production polling systems and mirrors some of the systems I use at work.
+---
+
+## Fetch Once, Poll Often: Why It Matters
+
+Repos don't change mid-session, so re-fetching them every 5 minutes wastes API calls and burns toward rate limits. This startup-vs-cycle separation is a common pattern in production polling systems and mirrors some of the systems I use professionally.
 
 ---
 

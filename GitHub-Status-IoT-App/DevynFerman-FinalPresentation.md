@@ -2,14 +2,14 @@
 marp: true
 size: 4:3
 paginate: true
-title: Final Presentation — Ambient GitHub PR Status Display
+title: Final Presentation: Ambient GitHub PR Status Display
 ---
 
 # Ambient GitHub PR Status Display
 ## Final Presentation
 
 Devyn Ferman
-CSC 494 — AI-Driven IoT System Development
+CSC 494: AI-Driven IoT System Development
 
 ---
 
@@ -17,7 +17,7 @@ CSC 494 — AI-Driven IoT System Development
 
 **Problem:** Constantly switching to GitHub to check PR status breaks focus.
 
-**Solution:** A physical, always-on display that passively surfaces the right info — no tab switching required.
+**Solution:** A physical, always-on display that passively surfaces the right info. No tab switching required.
 
 - Swift CLI polls GitHub on a configurable timer
 - Sends status to an Arduino-driven 16x2 LCD over serial
@@ -34,44 +34,44 @@ CSC 494 — AI-Driven IoT System Development
 **Since S1P:**
 - LCD displaying text via I2C firmware
 - POSIX serial connection implemented in Swift
-- Full GitHub polling — authored PRs + review-requested PRs
+- Full GitHub polling: authored PRs and review-requested PRs
 - Priority-based display logic and change detection
-- Error recovery — API failures surface on the LCD, loop continues
-- End-to-end validation with real hardware
+- Error recovery: API failures surface on the LCD and the loop keeps going
 
 ---
 
-## It Works
+## It Works!
 
-[Live demonstration]
+![bg right](UsingIoTDeviceAtWork.jpeg)
+
+Not only did I manage to get everything up and running ahead of time, I started actually using it as part of my workflow!
 
 ```
-swift run GitHubWatcher <username> <token> --wait 5 --watchTimeout 8
+./start-watcher.zsh <github-username> <GitHub Auth Token> [Options]
 ```
 
-**Canvas:** https://nku.instructure.com/courses/88152/pages/individual-progress-devyn-ferman
-**GitHub:** https://github.com/DevynFerman/school-projects
+
 
 ---
 
 ## Issues I Faced
 
-**Hardware — shared ground**
+**Hardware: Shared Ground**
 The LCD wouldn't respond at all. Once I understood that I2C requires all devices to share a common ground reference, the fix was a single wire.
 
-**Software — no serial abstraction in Swift**
-Swift doesn't have a built-in serial port API. I had to drop into Darwin's C layer using POSIX `termios` — configuring baud rate, stop bits, and parity by hand.
+**Software: No Serial Abstraction in Swift**
+Swift doesn't have a built-in serial port API. I had to drop into Darwin's C layer using POSIX `termios`, configuring baud rate, stop bits, and parity by hand.
 
-**Architecture — the original plan was too complex**
+**Architecture: The Original Plan Was Too Complex**
 The initial design had an ESP32 fetching a JSON status file over WiFi. Talking it through with AI made clear that a local Swift process sending messages directly to the Arduino over serial eliminated several layers that weren't earning their complexity.
 
 ---
 
 ## How AI Helped Me Solve Them
 
-**Shared ground:** AI explained why I2C requires a shared ground reference and what the symptom of a missing one looks like — which matched exactly what I was seeing.
+**Shared ground:** AI explained why I2C requires a shared ground reference and what the symptom of a missing one looks like, which matched exactly what I was seeing.
 
-**POSIX serial:** AI walked me through the `termios` configuration pattern step by step. It's a C API from the 1980s with no modern documentation — I wouldn't have gotten through it quickly on my own.
+**POSIX serial:** AI walked me through the `termios` configuration pattern step by step. It's a C API from the 1980s with no modern documentation, and I wouldn't have gotten through it quickly on my own.
 
 **Architectural pivot:** AI helped me compare the two approaches side by side. The tradeoffs were obvious once I listed them out, and the simpler path was also the better fit for how I actually use the device.
 
@@ -82,7 +82,7 @@ The initial design had an ESP32 fetching a JSON status file over WiFi. Talking i
 AI was most useful as a **thinking partner**, not a code generator.
 
 - It helped me ask better questions ("what do I actually need?" vs. "how do I implement X?")
-- It shortened the feedback loop on unfamiliar domains — hardware wiring, POSIX APIs, GitHub Search API behavior
+- It shortened the feedback loop on unfamiliar domains: hardware wiring, POSIX APIs, GitHub Search API behavior
 - It caught design problems early, before I spent time building the wrong thing
 
 The key was treating AI output as something to understand and verify, not something to copy and run.
