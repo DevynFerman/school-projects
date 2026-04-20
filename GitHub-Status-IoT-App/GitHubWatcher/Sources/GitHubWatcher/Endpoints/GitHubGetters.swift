@@ -55,7 +55,7 @@ extension WatcherManager {
             throw URLError(.userAuthenticationRequired)
         }
 
-        // Ensure we have repositories to query.
+        /// Ensure we have repositories to query.
         if repos.isEmpty {
             try await getRepos()
         }

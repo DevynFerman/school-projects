@@ -1,0 +1,24 @@
+{
+    "configurations": [
+        {
+            "type": "swift",
+            "request": "launch",
+            "args": [],
+            "cwd": "${workspaceFolder:school-projects}/GitHub-Status-IoT-App/GitHubWatcher",
+            "name": "Debug GitHubWatcher (GitHub-Status-IoT-App/GitHubWatcher)",
+            "target": "GitHubWatcher",
+            "configuration": "debug",
+            "preLaunchTask": "swift: Build Debug GitHubWatcher (GitHub-Status-IoT-App/GitHubWatcher)"
+        },
+        {
+            "type": "swift",
+            "request": "launch",
+            "args": [],
+            "cwd": "${workspaceFolder:school-projects}/GitHub-Status-IoT-App/GitHubWatcher",
+            "name": "Release GitHubWatcher (GitHub-Status-IoT-App/GitHubWatcher)",
+            "target": "GitHubWatcher",
+            "configuration": "release",
+            "preLaunchTask": "swift: Build Release GitHubWatcher (GitHub-Status-IoT-App/GitHubWatcher)"
+        }
+    ]
+}

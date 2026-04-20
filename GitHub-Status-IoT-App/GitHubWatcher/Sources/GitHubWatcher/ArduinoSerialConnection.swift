@@ -2,7 +2,7 @@
 //  ArduinoSerialConnection.swift
 //  GitHubWatcher
 //
-//  Created by Devyn Ferman on 3/31/26.
+//  Created by Devyn Ferman on 3/14/26.
 //
 
 import Foundation
@@ -104,15 +104,3 @@ final class ArduinoSerialConnection {
         tcdrain(fileDescriptor)
     }
 }
-
-// Example usage
-//do {
-//    try sendToArduino(
-//        topLine: "PR Ready",
-//        bottomLine: "login fix",
-//        portPath: "/dev/cu.usbserial-210"
-//    )
-//    print("Sent to Arduino")
-//} catch {
-//    print("Failed: \(error)")
-//}

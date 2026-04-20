@@ -17,20 +17,8 @@ struct GitHubWatcher: AsyncParsableCommand {
     @Argument(help: "Your GitHub username.")
     var username: String
 
-    // Devyn: Needs review before deleting
-    // @Argument
-    // var password: String
-
     @Argument(help: "A GitHub personal access token with repo scope.")
     var ghAuthToken: String
-
-    // Devyn: Needs review before deleting
-    // @Argument
-    // var name: String
-
-    // Devyn: Needs review before deleting
-    // @Argument
-    // var email: String
 
     @Option(help: "Time in minutes between poll cycles.")
     var wait: Int = 5
@@ -51,13 +39,14 @@ struct GitHubWatcher: AsyncParsableCommand {
         let serialConnection = try ArduinoSerialConnection(portPath: port)
         var lastDisplayedMessage: (topLine: String, bottomLine: String)?
 
-        // Fetch user profile and repos once at startup — these don't change during a session.
+        // MARK: Fetch user profile and repos once at startup — these don't change during a session.
         try await watchManager.getGitHubUser()
         try await watchManager.getRepos()
 
+        // MARK: Begin of polling loop
         for index in 0..<runCount {
             do {
-                // Reset PR data each cycle to avoid stale accumulation.
+                /// Reset PR data each cycle to avoid stale accumulation.
                 watchManager.myPullRequests = []
                 watchManager.reviewRequestedPullRequests = []
 
@@ -66,6 +55,7 @@ struct GitHubWatcher: AsyncParsableCommand {
 
                 let messages = watchManager.displayMessages()
 
+                /// In-class preview / debugging prints to terminal in the background. Ignored otherwise
                 print("Completed GitHub poll cycle \(index + 1)")
                 print("My PR count: \(watchManager.myPullRequests.count)")
                 print("Review requested count: \(watchManager.reviewRequestedPullRequests.count)")
@@ -73,7 +63,7 @@ struct GitHubWatcher: AsyncParsableCommand {
                 print("Open PR count: \(openPRCount)")
                 print("Display messages: \(messages.count) repo(s)")
 
-                // Cycle through per-repo messages, showing each for 10 seconds.
+                /// Cycle through per-repo messages, showing each for 10 seconds.
                 for message in messages {
                     if lastDisplayedMessage?.topLine != message.topLine || lastDisplayedMessage?.bottomLine != message.bottomLine {
                         try serialConnection.send(
@@ -86,13 +76,14 @@ struct GitHubWatcher: AsyncParsableCommand {
                     try await Task.sleep(for: .seconds(5))
                 }
 
-                // Wait the remainder of the poll interval.
+                /// Wait the remainder of the poll interval.
                 let displayTime = messages.count * 10
                 let remainingSeconds = (60 * wait) - displayTime
                 if remainingSeconds > 0 {
                     try await Task.sleep(for: .seconds(remainingSeconds))
                 }
             } catch {
+                /// Catch for failed polling
                 print("Failed during poll cycle \(index + 1): \(error)")
 
                 do {
@@ -102,6 +93,7 @@ struct GitHubWatcher: AsyncParsableCommand {
                     )
                     lastDisplayedMessage = ("Watcher Error", "See terminal")
                 } catch {
+                    /// Catch for failed pushing to Arduino
                     print("Failed to send error state to Arduino: \(error)")
                 }
 

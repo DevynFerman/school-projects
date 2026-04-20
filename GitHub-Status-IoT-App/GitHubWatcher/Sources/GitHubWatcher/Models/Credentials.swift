@@ -9,7 +9,7 @@ struct Credentials: Codable {
     let username: String
     let ghAuthToken: String
 
-    // Devyn: Needs review before deleting
+    // Devyn: Consider deleting as they're not needed with the auth token approach
     // let password: String?
     // let name: String
     // let email: String
