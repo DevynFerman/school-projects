@@ -6,7 +6,7 @@
 #  Created by Devyn Ferman on 4/16/26.
 #
 #  Usage:
-#    ./start-watcher.zsh <github-username> [options]
+#    ./start-watcher.zsh <github-username> <GitHub Auth Token> [Options]
 #
 #  The GitHub token is read from the GITHUB_TOKEN environment variable,
 #  or can be passed as a second positional argument (less secure).

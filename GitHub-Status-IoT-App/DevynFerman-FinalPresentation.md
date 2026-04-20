@@ -44,7 +44,7 @@ CSC 494: AI-Driven IoT System Development
 
 ![bg right](UsingIoTDeviceAtWork.jpeg)
 
-Not only did I manage to get everything up and running ahead of time, I started actually using it as part of my workflow!
+Not only did I manage to get everything up and running ahead of time, I started actually using it as part of my workflow! All I needed to do was plug it in and run a single command to have my passive notifications running.
 
 ```
 ./start-watcher.zsh <github-username> <GitHub Auth Token> [Options]
@@ -71,7 +71,7 @@ The initial design had an ESP32 fetching a JSON status file over WiFi. Talking i
 
 **Shared ground:** AI explained why I2C requires a shared ground reference and what the symptom of a missing one looks like, which matched exactly what I was seeing.
 
-**POSIX serial:** AI walked me through the `termios` configuration pattern step by step. It's a C API from the 1980s with no modern documentation, and I wouldn't have gotten through it quickly on my own.
+**POSIX serial:** AI walked me through the `termios` configuration pattern step by step. It's a C API from the 1980s with no modern documentation, and I wouldn't have gotten through it quickly (or at all) on my own!
 
 **Architectural pivot:** AI helped me compare the two approaches side by side. The tradeoffs were obvious once I listed them out, and the simpler path was also the better fit for how I actually use the device.
 
